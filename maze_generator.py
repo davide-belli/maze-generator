@@ -4,8 +4,10 @@ import matplotlib as mpl
 # mpl.use('Agg')
 import matplotlib.pyplot as plt
 
+from utils import *
 
-def maze(width=51, height=51, complexity=1., density=10, intermediate_plots=False, fig=None):
+
+def generate_maze(width=51, height=51, complexity=1., density=10, intermediate_plots=False, fig=None):
     # Only odd shapes
     shape = ((height // 2) * 2 + 1, (width // 2) * 2 + 1)
     # Adjust complexity and density relative to maze size
@@ -44,31 +46,14 @@ def maze(width=51, height=51, complexity=1., density=10, intermediate_plots=Fals
     # return Z
 
 
-def plot(Z):
-    plt.imshow(Z, cmap=plt.cm.binary, interpolation='nearest')
-    plt.xticks([])
-    plt.yticks([])
-    plt.draw()
-    # plt.pause(0.001)
-    plt.pause(1)
-
-
-def plot_save(Z):
-    plt.imshow(Z, cmap=plt.cm.binary, interpolation='nearest')
-    plt.xticks([])
-    plt.yticks([])
-    plt.savefig("./maze.png")
-
-
-def experiment_maze(n):
+def test_maze(n):
     fig = plt.figure(figsize=(5, 5))
     for i in range(n):
-        Z = maze(10, 10)
+        Z = generate_maze(10, 10)
         plot(Z, fig)
     return
 
 
 if __name__ == '__main__':
-    # experiment_maze(1)
-    Z = maze(40, 40)
-    plot_save(Z)
+    Z = generate_maze(40, 40)
+    save_plot(Z)
