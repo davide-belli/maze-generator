@@ -40,7 +40,7 @@ def generate_maze(width=51, height=51, complexity=1., density=10, intermediate_p
                     Z[y_ + (y - y_) // 2, x_ + (x - x_) // 2] = 1
                     x, y = x_, y_
                     if intermediate_plots:
-                        plot(Z)
+                        plot_maze(Z)
     
     return Z[1:-1, 1:-1]
     # return Z
@@ -50,7 +50,7 @@ def test_maze(n):
     fig = plt.figure(figsize=(5, 5))
     for i in range(n):
         Z = generate_maze(10, 10)
-        plot(Z, fig)
+        plot_maze(Z, fig)
     return
 
 

@@ -10,14 +10,26 @@ from copy import deepcopy
 from utils import *
 from maze_generator import generate_maze
 
-# Generate Datasets with configuration: (size, n_mazes, size_source_maze, time_limit)
+
+# Generate Datasets with configuration:
+# (size, n_mazes, size_source_maze, time_limit)
+# CONFIG = [
+#     (3, 1000, 15, 60),
+#     (4, 2000, 20, 360),
+#     (5, 5000, 20, 1200),
+#     (7, 10000, 25, 3600),
+#     (9, 30000, 25, 3600),
+# ]
+
+# Night
 CONFIG = [
-    (3, 1000, 15, 60),
-    (4, 2000, 20, 180),
-    (5, 5000, 20, 1200),
-    (7, 10000, 25, 3600),
-    (9, 30000, 25, 3600),
+    (3, 1000, 15, 180),
+    (4, 5000, 20, 1200),
+    (5, 10000, 20, 3600),
+    (7, 500000, 25, 14400),
+    (9, 1000000, 25, 28800),
 ]
+
 
 def extract_submazes(size=3, n=100, size_source_maze=20, time_limit=1000, unique_CC=False, verbose=False):
     start_time = time.time()
@@ -30,12 +42,12 @@ def extract_submazes(size=3, n=100, size_source_maze=20, time_limit=1000, unique
         for i in range(0, size_source_maze - size):
             for j in range(0, size_source_maze - size):
                 x = z[i:i + size, j:j + size]
-                dfs, dfs_ids, dfs_edges = run_dfs(x, unique_CC=unique_CC)
-                if dfs is not None:
+                dfs_coordinates, dfs_ids, dfs_edges = run_dfs(x, unique_CC=unique_CC)
+                if dfs_coordinates is not None:
                     m = to_tuple(x)
                     if m not in maze_dict:
                         maze_dict[m] = {
-                            "dfs_coordinates": dfs,
+                            "dfs_coordinates": dfs_coordinates,
                             "dfs_ids": dfs_ids,
                             "dfs_edges": dfs_edges,
                         }
@@ -47,59 +59,6 @@ def extract_submazes(size=3, n=100, size_source_maze=20, time_limit=1000, unique
         size, len(maze_dict), time.time() - start_time)
     )
     return maze_dict
-
-
-def run_dfs(graph, start=(0, 0), unique_CC=False):
-    size = graph.shape[0]
-    n_ones = sum(sum(graph))
-    n_zeros = size * size - n_ones
-    
-    if graph[0, 0] == 1 or graph[-1, -1] == 1 or n_ones > size*size-size:
-        # heuristic to prune DFS
-        return None, None, None
-    
-    visited, stack = set(), [(None, start)]
-    edges = set()
-    dfs = []
-    dfs_ids = []
-    dfs_edges = []
-    exists_path = False
-    
-    while stack:
-        parent, node = stack.pop()
-        i, j = node
-        p_i, p_j = parent if parent is not None else (0, 0)
-        n_id, p_id = i * size + j, p_i * size + p_j
-        if node not in visited:
-            dfs.append(node)
-            dfs_ids.append(n_id)
-            visited.add(node)
-            if parent is not None:
-                dfs_edges.append((p_id, n_id))
-                edges.update([(p_id, n_id), (n_id, p_id)])
-            
-            if i == size-1 and j == size-1:
-                exists_path = True
-            if j > 0 and not graph[i, j-1]:
-                stack.append((node, (i, j-1)))
-            if i < size-1 and not graph[i+1, j]:
-                stack.append((node, (i+1, j)))
-            if j < size-1 and not graph[i, j+1]:
-                stack.append((node, (i, j+1)))
-            if i > 0 and not graph[i-1, j]:
-                stack.append((node, (i-1, j)))
-        elif (p_id, n_id) not in edges and parent is not None:
-            dfs_edges.append((p_id, n_id))
-            edges.update([(p_id, n_id), (n_id, p_id)])
-            
-    if unique_CC:
-        is_unique_CC = len(dfs) == n_zeros
-        # if is_unique_CC:
-        #     plot(graph)
-        assert not is_unique_CC or exists_path, "unique_CC should imply exists_path"
-        return (dfs, dfs_ids, dfs_edges) if is_unique_CC else (None, None, None)
-    else:
-        return (dfs, dfs_ids, dfs_edges) if exists_path else (None, None, None)
 
 
 def generate_dataset(size, n, size_source_maze, time_limit=1000, unique_CC=False, verbose=False):
@@ -119,7 +78,7 @@ def test_extract_submazes():
     maze_dict = extract_submazes(size=9, n=100, size_source_maze=20, time_limit=60, unique_CC=True, verbose=True)
     for z, dfs in maze_dict.items():
         # print(to_array(z))
-        plot(to_array(z), pause_time=.5)
+        plot_maze(to_array(z), pause_time=.5)
     
 
 if __name__ == '__main__':
